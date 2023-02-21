@@ -11,18 +11,17 @@ namespace WpfApiWeatherNews
     [Serializable]
     public  class CustomHotKey : HotKey
     {
-        private Action<Key, ModifierKeys> _onHotKeyPressHandler;
-        public CustomHotKey(Key key, ModifierKeys modifiers, Action<Key, ModifierKeys> onHotKeyPressAction = null)
+        private Action _onHotKeyPressHandler;
+        public CustomHotKey(Key key, ModifierKeys modifiers, Action onHotKeyPressAction)
             : base(key, modifiers, true)
         {
             _onHotKeyPressHandler = onHotKeyPressAction;
         }
-        
+  
         protected override void OnHotKeyPress()
         {
-            _onHotKeyPressHandler?.Invoke(Key, Modifiers);
+            _onHotKeyPressHandler?.Invoke();
             base.OnHotKeyPress();
         }
     }
-
 }

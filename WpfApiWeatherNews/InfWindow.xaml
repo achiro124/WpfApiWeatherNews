@@ -5,9 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WpfApiWeatherNews"
         mc:Ignorable="d"
-        Title="InfWindow" Height="143" Width="325">
-    <Grid>
-        <TextBlock x:Name="txtBlock" HorizontalAlignment="Center" TextWrapping="Wrap" FontSize="40" Text="TextBlock" VerticalAlignment="Center" Height="107" Width="305"/>
-
+        Title="InfWindow" Height="143" Width="325" WindowStyle="None" Background="White" ResizeMode="NoResize">
+    <Grid Height="143" Width="325"  Background="#FFD2D2D2" >
+        <TextBlock x:Name="txtBlock" HorizontalAlignment="Center" TextWrapping="Wrap" Background="White" FontSize="30" Text="TextBlock" VerticalAlignment="Top" Height="101" Width="305" Margin="0,32,0,0" Foreground="#FF292929"/>
+        <Button Content="X" HorizontalAlignment="Left" Margin="298,4,0,0" VerticalAlignment="Top" Height="23" Width="23" Click="Button_Click" BorderBrush="{x:Null}" FontSize="14" Background="#FFD2D2D2"/>
     </Grid>
 </Window>
