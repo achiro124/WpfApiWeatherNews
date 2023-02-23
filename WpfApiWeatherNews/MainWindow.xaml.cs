@@ -14,6 +14,8 @@ using System.Windows.Forms;
 using System.Net.Http;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using System.Runtime.InteropServices;
+using System.Diagnostics;
 
 namespace WpfApiWeatherNews
 {
@@ -30,20 +32,10 @@ namespace WpfApiWeatherNews
         public MainWindow()
         {
             InitializeComponent();
-
-
-
-            // Note: for the application hook, use the Hook.AppEvents() instead.
-            //globalMouseHook = Hook.GlobalEvents();
-
-            // Same as double click, so I didn't write here.
-            //globalMouseHook.MouseDragFinished += CreateWindow;
-
         }
 
 
         void notifier_MouseDown(object sender, WinForms.MouseEventArgs e)
-
         {
             ContextMenu menu = (ContextMenu)this.FindResource("NotifierContextMenu");
             if (e.Button == WinForms.MouseButtons.Right)
@@ -54,30 +46,31 @@ namespace WpfApiWeatherNews
             {
                 menu.IsOpen = false;
             }
-
         }
 
         private void Menu_Open(object sender, RoutedEventArgs e)
-
         {
-
             this.Visibility = Visibility.Visible;
-
         }
 
         private void Menu_Close(object sender, RoutedEventArgs e)
         {
             this.notifier.Dispose();
             this.Close();
-
         }
 
+        [DllImport("User32.dll")]
+        static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
+        [DllImport("User32.dll")]
+        static extern int SetForegroundWindow(IntPtr hWnd);
 
-        //private IKeyboardMouseEvents globalMouseHook;
 
         [STAThread]
         private async void TextSelection()
         {
+            //Process process = Process.Start("notepad.exe");
+            IntPtr hWndNotepad = FindWindow("Notepad", null);
+            SetForegroundWindow(hWndNotepad);
 
             IDataObject tmpClipboard = System.Windows.Clipboard.GetDataObject();
             //System.Windows.Clipboard.Clear();
@@ -85,8 +78,6 @@ namespace WpfApiWeatherNews
             // Send Ctrl+C, which is "copy"
             System.Windows.Forms.SendKeys.SendWait("^c");
             await Task.Delay(50);
-
-
 
             if (System.Windows.Clipboard.ContainsText())
             {
@@ -96,11 +87,11 @@ namespace WpfApiWeatherNews
                 try
                 {
                     //Определение к какому языку принадлежит слово(ru, eng и т.д.)
-                    string language = await ApiDetect(text);
+                    //string language = await ApiDetect(text);
                     //Перевод с определенного языка на английский
-                    result = await ApiTranslate(text, language);
+                    result = await ApiTranslate(text);
                     //Запрос
-                    //ApiWeather(text);
+                    // 
                 }
                 catch (Exception)
                 {
@@ -109,11 +100,6 @@ namespace WpfApiWeatherNews
 
                 CreateNewWindow(GetMousePosition(), result);
                 
-            }
-            else
-            {
-                // Restore the Clipboard.
-                //System.Windows.Clipboard.SetDataObject(tmpClipboard);
             }
         }   
         private void ApiWeather(string text)
@@ -125,35 +111,30 @@ namespace WpfApiWeatherNews
             string response = reader.ReadToEnd();
         }
 
-        private async Task<string> ApiTranslate(string text,string type)
+        private async Task<string> ApiTranslate(string text)
         {
             var client = new HttpClient();
             var request = new HttpRequestMessage
             {
-                Method = HttpMethod.Post,
-                RequestUri = new Uri("https://google-translate1.p.rapidapi.com/language/translate/v2"),
+                Method = HttpMethod.Get,
+                RequestUri = new Uri($"https://translated-mymemory---translation-memory.p.rapidapi.com/get?langpair=ru%7Cen&q={text}&onlyprivate=0&de=a%40b.c"),
                 Headers =
                 {
                     { "X-RapidAPI-Key", "73cbdbded0msh1b1e8244f1c101cp193587jsna6ed49a51a2f" },
-                    { "X-RapidAPI-Host", "google-translate1.p.rapidapi.com" },
+                    { "X-RapidAPI-Host", "translated-mymemory---translation-memory.p.rapidapi.com" },
                 },
-                Content = new FormUrlEncodedContent(new Dictionary<string, string>
-                {
-                    { "q", $"{text}" },
-                    { "target", "en" },
-                    { "source", $"{type}" },
-                }),
             };
             using (var response = await client.SendAsync(request))
             {
                 response.EnsureSuccessStatusCode();
                 var body = await response.Content.ReadAsStringAsync();
                 dynamic? d = JsonConvert.DeserializeObject(body);
-                if(d != null)
+                if (d != null)
                 {
-                    text = d.data.translations[0].translatedText.ToString();
+                    text = d.responseData.translatedText.ToString();
                 }
             }
+
             return text;
         }
     
@@ -239,12 +220,6 @@ namespace WpfApiWeatherNews
             this.notifier.Visible = true;
 
             this.Visibility = Visibility.Hidden;
-
-
-
-
-
-
         }
     }
 }
