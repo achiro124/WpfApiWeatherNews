@@ -19,11 +19,15 @@ namespace WpfApiWeatherNews
     /// </summary>
     public partial class InfWindow : Window
     {
-        public InfWindow(string text)
+
+        public InfWindow((string, string) weather)
         {
             InitializeComponent();
-            txtBlock.Text = text;
 
+            txtTown.Text = weather.Item1;
+            txtTemp.Text = weather.Item2;
+
+            this.DataContext = this;
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)

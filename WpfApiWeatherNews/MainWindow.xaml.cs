@@ -83,32 +83,44 @@ namespace WpfApiWeatherNews
             {
                 string text = System.Windows.Clipboard.GetText();
                 string result;
+                (string, string) weather;
 
                 try
                 {
                     //Определение к какому языку принадлежит слово(ru, eng и т.д.)
                     //string language = await ApiDetect(text);
                     //Перевод с определенного языка на английский
-                    result = await ApiTranslate(text);
+                    text = await ApiTranslate(text);
+                    weather = ApiWeather(text);
                     //Запрос
                     // 
                 }
                 catch (Exception)
                 {
-                    result = "Неккоректное слово";
+                    weather.Item1 = "Неккоректное слово";
+                    weather.Item2 = "";
                 }
 
-                CreateNewWindow(GetMousePosition(), result);
+                CreateNewWindow(GetMousePosition(), weather);
                 
             }
         }   
-        private void ApiWeather(string text)
+        private (string,string) ApiWeather(string text)
         {
             string url = $"https://api.openweathermap.org/data/2.5/weather?q={text}&appid=45d5a3898d82a7610684380eed0a7bff&units=metric";
             HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url);
             HttpWebResponse res = (HttpWebResponse)req.GetResponse();
             StreamReader reader = new StreamReader(res.GetResponseStream());
             string response = reader.ReadToEnd();
+           // var body = response.Content();
+            dynamic? d = JsonConvert.DeserializeObject(response);
+            (string, string) weather = ("","");
+            if (d != null)
+            {
+                weather.Item1 = d.name.ToString();
+                weather.Item2 = d.main.temp.ToString() + " °C";
+            }
+            return (weather);
         }
 
         private async Task<string> ApiTranslate(string text)
@@ -138,35 +150,35 @@ namespace WpfApiWeatherNews
             return text;
         }
     
-        private async Task<string> ApiDetect(string text)
+      //  private async Task<string> ApiDetect(string text)
+      //  {
+      //      var client = new HttpClient();
+      //      var request = new HttpRequestMessage
+      //      {
+      //          Method = HttpMethod.Post,
+      //          RequestUri = new Uri("https://google-translate1.p.rapidapi.com/language/translate/v2/detect"),
+      //          Headers =
+      //          {
+      //              { "X-RapidAPI-Key", "73cbdbded0msh1b1e8244f1c101cp193587jsna6ed49a51a2f" },
+      //              { "X-RapidAPI-Host", "google-translate1.p.rapidapi.com" },
+      //          },
+      //          Content = new FormUrlEncodedContent(new Dictionary<string, string>
+      //          {
+      //              { "q", $"{text}" },
+      //          }),
+      //      };
+      //      using (var response = await client.SendAsync(request))
+      //      {
+      //          response.EnsureSuccessStatusCode();
+      //          var body = await response.Content.ReadAsStringAsync();
+      //          dynamic? d = JsonConvert.DeserializeObject(body);
+      //          string language = d != null ? d.data.detections[0][0].language.ToString() : "";
+      //          return language;
+      //      }
+      //  }
+        private void CreateNewWindow(System.Windows.Point startLocation, (string,string) weather)
         {
-            var client = new HttpClient();
-            var request = new HttpRequestMessage
-            {
-                Method = HttpMethod.Post,
-                RequestUri = new Uri("https://google-translate1.p.rapidapi.com/language/translate/v2/detect"),
-                Headers =
-                {
-                    { "X-RapidAPI-Key", "73cbdbded0msh1b1e8244f1c101cp193587jsna6ed49a51a2f" },
-                    { "X-RapidAPI-Host", "google-translate1.p.rapidapi.com" },
-                },
-                Content = new FormUrlEncodedContent(new Dictionary<string, string>
-                {
-                    { "q", $"{text}" },
-                }),
-            };
-            using (var response = await client.SendAsync(request))
-            {
-                response.EnsureSuccessStatusCode();
-                var body = await response.Content.ReadAsStringAsync();
-                dynamic? d = JsonConvert.DeserializeObject(body);
-                string language = d != null ? d.data.detections[0][0].language.ToString() : "";
-                return language;
-            }
-        }
-        private void CreateNewWindow(System.Windows.Point startLocation, string text)
-        {
-            var window = new InfWindow(text);
+            var window = new InfWindow(weather);
             window.Owner = this;
             var helper = new WindowInteropHelper(window);
             var hwndSource = HwndSource.FromHwnd(helper.EnsureHandle());
