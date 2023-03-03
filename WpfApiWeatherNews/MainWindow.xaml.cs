@@ -16,6 +16,10 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
+using System.ComponentModel;
+using System.Xml;
+using System.Xml.Linq;
+using System.Linq;
 
 namespace WpfApiWeatherNews
 {
@@ -25,9 +29,28 @@ namespace WpfApiWeatherNews
     /// 
 
 
-    public partial class MainWindow : System.Windows.Window
+    public partial class MainWindow : System.Windows.Window ,INotifyPropertyChanged
     {
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected virtual void OnPropertyChanged(string propertyName = "")
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
         private WinForms.NotifyIcon notifier = new WinForms.NotifyIcon();
+
+        private HotKeyHost hotKeyHost;
+
+        private (ModifierKeys, Key) keys;
+        public (ModifierKeys,Key) Keys 
+        {
+            get => keys;
+            set
+            {
+                keys = value;
+                OnPropertyChanged(nameof(Keys));
+            }
+        }
 
         public MainWindow()
         {
@@ -46,11 +69,6 @@ namespace WpfApiWeatherNews
             {
                 menu.IsOpen = false;
             }
-        }
-
-        private void Menu_Open(object sender, RoutedEventArgs e)
-        {
-            this.Visibility = Visibility.Visible;
         }
 
         private void Menu_Close(object sender, RoutedEventArgs e)
@@ -149,33 +167,6 @@ namespace WpfApiWeatherNews
 
             return text;
         }
-    
-      //  private async Task<string> ApiDetect(string text)
-      //  {
-      //      var client = new HttpClient();
-      //      var request = new HttpRequestMessage
-      //      {
-      //          Method = HttpMethod.Post,
-      //          RequestUri = new Uri("https://google-translate1.p.rapidapi.com/language/translate/v2/detect"),
-      //          Headers =
-      //          {
-      //              { "X-RapidAPI-Key", "73cbdbded0msh1b1e8244f1c101cp193587jsna6ed49a51a2f" },
-      //              { "X-RapidAPI-Host", "google-translate1.p.rapidapi.com" },
-      //          },
-      //          Content = new FormUrlEncodedContent(new Dictionary<string, string>
-      //          {
-      //              { "q", $"{text}" },
-      //          }),
-      //      };
-      //      using (var response = await client.SendAsync(request))
-      //      {
-      //          response.EnsureSuccessStatusCode();
-      //          var body = await response.Content.ReadAsStringAsync();
-      //          dynamic? d = JsonConvert.DeserializeObject(body);
-      //          string language = d != null ? d.data.detections[0][0].language.ToString() : "";
-      //          return language;
-      //      }
-      //  }
         private void CreateNewWindow(System.Windows.Point startLocation, (string,string) weather)
         {
             var window = new InfWindow(weather);
@@ -222,16 +213,95 @@ namespace WpfApiWeatherNews
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-
-            var hotKeyHost = new HotKeyHost((HwndSource)PresentationSource.FromVisual(this));
-            //hotKeyHost.AddHotKey(new CustomHotKey(Key.None, ModifierKeys.Control, TextSelection));
+            CreateXmlPersonKeys();
+            hotKeyHost = new HotKeyHost((HwndSource)PresentationSource.FromVisual(this));
             hotKeyHost.AddHotKey(new CustomHotKey(Key.A, ModifierKeys.Control, TextSelection));
 
             this.notifier.MouseDown += new WinForms.MouseEventHandler(notifier_MouseDown);
-            this.notifier.Icon = new System.Drawing.Icon("D:\\C#\\WpfApiWeatherNews\\WpfApiWeatherNews\\Resources\\icon.ico");
+            var exePath = AppDomain.CurrentDomain.BaseDirectory;
+            var path = Path.Combine(exePath, "Resources\\icon.ico");
+            this.notifier.Icon = new System.Drawing.Icon(path);
             this.notifier.Visible = true;
 
             this.Visibility = Visibility.Hidden;
+            txtBoxKeys.DataContext = this;
+
+        }
+
+        private void Menu_Settings(object sender, RoutedEventArgs e)
+        {
+            this.Visibility = Visibility.Visible;
+            hotKeyHost.RemoveHotKey(new CustomHotKey(Keys.Item2, Keys.Item1, TextSelection));
+        }
+
+        private void Window_Closing(object sender, CancelEventArgs e)
+        {
+            //hotKeyHost.AddHotKey(new CustomHotKey(Keys.Item2, Keys.Item1, TextSelection));
+            e.Cancel = true;
+            Hide();
+        }
+        private void btnChange_Click(object sender, RoutedEventArgs e)
+        {
+            this.KeyDown += Window_KeyDown;
+        }
+        private void Window_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if(e.KeyboardDevice.Modifiers != ModifierKeys.None && e.Key != Key.None)
+            {
+                Keys = (e.KeyboardDevice.Modifiers, e.Key);
+            }
+        }
+
+        private void btnSave_Click(object sender, RoutedEventArgs e)
+        {
+            hotKeyHost.AddHotKey(new CustomHotKey(Keys.Item2, Keys.Item1, TextSelection));
+            NewPersonKeys(Keys);
+            this.KeyDown -= Window_KeyDown;
+        }
+
+
+        private void CreateXmlPersonKeys()
+        {
+            XmlDocument xDoc = new XmlDocument();
+            xDoc.Load("PersonKeys.xml");
+            if(xDoc != null)
+            {
+                foreach (XmlNode node in xDoc.DocumentElement)
+                {
+                    (ModifierKeys, Key) _keys;
+                    _keys.Item2 = (Key)int.Parse(node["Key"].InnerText);
+                    _keys.Item1 = (ModifierKeys)int.Parse(node["Modifiers"].InnerText);
+                    Keys = _keys;
+                }                
+            }
+        }
+
+        private void NewPersonKeys((ModifierKeys, Key) myCastomKeys)
+        {
+            XDocument xdoc = XDocument.Load("PersonKeys.xml");
+            var _key = xdoc.Element("Keys")?
+                          .Elements("CastomKey")
+                          .FirstOrDefault(p => p.Attribute("name")?.Value == "castomKey");
+
+            if (_key != null)
+            {
+
+                var numKey = _key.Element("Key");
+                if (numKey != null)
+                {
+                    int k = (int)myCastomKeys.Item2;
+                    numKey.Value = $"{k}";
+                }
+
+                var numModif = _key.Element("Modifiers");
+                if (numModif != null)
+                {
+                    int k = (int)myCastomKeys.Item1;
+                    numModif.Value = $"{k}";
+                }
+                    
+                xdoc.Save("PersonKeys.xml");
+            }
         }
     }
 }

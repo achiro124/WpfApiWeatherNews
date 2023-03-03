@@ -5,16 +5,25 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WpfApiWeatherNews"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800" Loaded="Window_Loaded">
+        Title="Settings" Height="127" Width="299" Loaded="Window_Loaded" WindowStartupLocation="CenterScreen" ResizeMode="NoResize" WindowStyle="ThreeDBorderWindow" Closing="Window_Closing">
 
     <Window.Resources>
         <ContextMenu x:Key="NotifierContextMenu" Placement="MousePoint">
-            <MenuItem Header="Open" Click="Menu_Open"/>
+            <MenuItem Header="Settings" Click="Menu_Settings"/>
             <MenuItem Header="Close" Click="Menu_Close"/>
         </ContextMenu>
+        <local:KeysConverter x:Key="myKeysConverter"/>
     </Window.Resources>
 
     <Grid>
-        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="0.8*"/>
+        </Grid.RowDefinitions>
+        <TextBlock x:Name="txtBoxKeys" Grid.Row="0" Margin="6,6,6,6" FontSize="24" Text="{Binding Path=Keys,UpdateSourceTrigger=PropertyChanged, Mode=OneWay, Converter={StaticResource myKeysConverter}}"/>
+        <StackPanel Orientation="Horizontal"  Grid.Row="1" HorizontalAlignment="Center" >
+            <Button x:Name="btnChange" Height="30" Width="80" Margin="0,0,10,0" Content="Изменить" Click="btnChange_Click"/>
+            <Button x:Name="btnSave" Height="30" Width="80" Content="Сохранить" Click="btnSave_Click"/>
+        </StackPanel>
     </Grid>
 </Window>

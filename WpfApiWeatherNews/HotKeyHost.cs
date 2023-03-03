@@ -178,7 +178,7 @@ namespace WpfApiWeatherNews
         /// <returns>True if success, otherwise false</returns>
         public bool RemoveHotKey(HotKey hotKey)
         {
-            var kvPair = hotKeys.FirstOrDefault(h => h.Value == hotKey);
+            var kvPair = hotKeys.FirstOrDefault(h => h.Value.Equals(hotKey));
             if (kvPair.Value != null)
             {
                 kvPair.Value.PropertyChanged -= hotKey_PropertyChanged;
