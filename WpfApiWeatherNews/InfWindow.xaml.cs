@@ -11,6 +11,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 
 namespace WpfApiWeatherNews
 {
@@ -19,20 +20,51 @@ namespace WpfApiWeatherNews
     /// </summary>
     public partial class InfWindow : Window
     {
-
+        private DispatcherTimer timer = new DispatcherTimer();
         public InfWindow((string, string) weather)
         {
             InitializeComponent();
+            timer.Interval = TimeSpan.FromSeconds(1);
+            timer.Tick += timer_Tick;
+            timer.Start();
 
-            txtTown.Text = weather.Item1;
-            txtTemp.Text = weather.Item2;
+
+            txtTown.Text = weather.Item1 + ": " + weather.Item2;
 
             this.DataContext = this;
+        }
+
+        private void timer_Tick(object? sender, EventArgs e)
+        {
+            if(this.Opacity <= 0)
+            {
+                this.Close();
+            }
+            this.Opacity -= 0.05;
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             this.Close();
+        }
+
+        private void Window_MouseEnter(object sender, MouseEventArgs e)
+        {
+            timer.Stop();
+            this.Opacity = 1;
+        }
+
+        private void Window_MouseLeave(object sender, MouseEventArgs e)
+        {
+            timer.Start();
+        }
+
+        private void Window_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if(e.ChangedButton == MouseButton.Left)
+            {
+                this.DragMove();
+            }
         }
     }
 }

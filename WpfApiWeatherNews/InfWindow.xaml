@@ -5,10 +5,14 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WpfApiWeatherNews"
         mc:Ignorable="d"
-        Title="InfWindow" Height="143" Width="325" WindowStyle="None" Background="White" ResizeMode="NoResize">
-    <Grid Height="143" Width="325"  Background="#FFD2D2D2" >
-        <TextBlock x:Name="txtTown" HorizontalAlignment="Center" TextWrapping="Wrap" Background="White" FontSize="20" Text="{Binding Town}" VerticalAlignment="Top" Height="48" Width="305" Margin="0,32,0,0" Foreground="#FF292929"/>
-        <Button Content="X" HorizontalAlignment="Left" Margin="298,4,0,0" VerticalAlignment="Top" Height="23" Width="23" Click="Button_Click" BorderBrush="{x:Null}" FontSize="14" Background="#FFD2D2D2"/>
-        <TextBlock x:Name="txtTemp" HorizontalAlignment="Center" TextWrapping="Wrap" Background="White" FontSize="20" Text="{Binding Temp}" VerticalAlignment="Top" Height="48" Width="305" Margin="0,85,0,0" Foreground="#FF292929"/>
+        Title="Погода на данный момент" Height="85" Width="275" ResizeMode="NoResize" AllowsTransparency="True" 
+        WindowStyle="None" Topmost="True" MouseEnter="Window_MouseEnter" MouseLeave="Window_MouseLeave" MouseDown="Window_MouseDown">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="0.35*"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Button Grid.Row="0" Content="X"  Height="18" Width="18" HorizontalAlignment="Right" Margin="0,0,5,0" FontSize="12"  Padding="1,1,1,1" BorderThickness="0,0,0,0" Background="White" Click="Button_Click"/>
+        <TextBlock x:Name="txtTown" Grid.Row="1" TextWrapping="Wrap" Margin="10"  FontSize="20" Text="123" />
     </Grid>
 </Window>

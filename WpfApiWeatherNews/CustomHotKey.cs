@@ -17,9 +17,6 @@ namespace WpfApiWeatherNews
         {
             _onHotKeyPressHandler = onHotKeyPressAction;
         }
-
-        public CustomHotKey(Key key, ModifierKeys modifiers) : base(key, modifiers){}
-  
         protected override void OnHotKeyPress()
         {
             _onHotKeyPressHandler?.Invoke();
