@@ -9,6 +9,7 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Windows.Threading;
@@ -20,27 +21,31 @@ namespace WpfApiWeatherNews
     /// </summary>
     public partial class InfWindow : Window
     {
-        private DispatcherTimer timer = new DispatcherTimer();
+        private DispatcherTimer timer;
         public InfWindow((string, string) weather)
         {
             InitializeComponent();
-            timer.Interval = TimeSpan.FromSeconds(1);
-            timer.Tick += timer_Tick;
+            timer = new DispatcherTimer();
+            timer.Interval = TimeSpan.FromMilliseconds(10);
+            timer.Tick += Timer_Tick;
             timer.Start();
 
 
             txtTown.Text = weather.Item1 + ": " + weather.Item2;
-
             this.DataContext = this;
         }
 
-        private void timer_Tick(object? sender, EventArgs e)
+        private void Timer_Tick(object? sender, EventArgs e)
         {
-            if(this.Opacity <= 0)
+            if (Opacity > 0)
             {
-                this.Close();
+                Opacity -= 0.001;
             }
-            this.Opacity -= 0.05;
+            else
+            {
+                timer.Stop();
+                Close();
+            }
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
@@ -48,17 +53,16 @@ namespace WpfApiWeatherNews
             this.Close();
         }
 
-        private void Window_MouseEnter(object sender, MouseEventArgs e)
+        private void Window_Activated(object sender, EventArgs e)
         {
             timer.Stop();
-            this.Opacity = 1;
+            Opacity = 1;
         }
 
-        private void Window_MouseLeave(object sender, MouseEventArgs e)
+        private void Window_Deactivated(object sender, EventArgs e)
         {
             timer.Start();
         }
-
         private void Window_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if(e.ChangedButton == MouseButton.Left)

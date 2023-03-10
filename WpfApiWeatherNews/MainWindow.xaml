@@ -5,10 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WpfApiWeatherNews"
         mc:Ignorable="d"
-        Title="Settings" Height="127" Width="299" Loaded="Window_Loaded" WindowStartupLocation="CenterScreen" ResizeMode="NoResize" WindowStyle="ThreeDBorderWindow" Closing="Window_Closing">
+        Title="Settings" Height="127" Width="299" Loaded="Window_Loaded" WindowStartupLocation="CenterScreen" ResizeMode="NoResize" WindowStyle="ThreeDBorderWindow" Closing="Window_Closing" >
 
-    <Window.Resources>
-        <ContextMenu x:Key="NotifierContextMenu" Placement="MousePoint">
+    <Window.Resources >
+        <ContextMenu Name="ContextMenu" x:Key="NotifierContextMenu" Placement="MousePoint" >
             <MenuItem Header="Settings" Click="Menu_Settings"/>
             <MenuItem Header="Close" Click="Menu_Close"/>
         </ContextMenu>

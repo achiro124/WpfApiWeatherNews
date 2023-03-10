@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Interop;
@@ -48,22 +49,30 @@ namespace WpfApiWeatherNews
             }
         }
 
+        public ContextMenu MyContextMenu { get; set; }
+
         public MainWindow()
         {
             InitializeComponent();
+            MyContextMenu = (ContextMenu)this.FindResource("NotifierContextMenu");
         }
-
+        private void Window_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Left)
+            {
+                // Закрываем контекстное меню
+                if (ContextMenu.IsOpen)
+                {
+                    ContextMenu.IsOpen = false;
+                }
+            }
+        }
 
         void notifier_MouseDown(object sender, WinForms.MouseEventArgs e)
         {
-            ContextMenu menu = (ContextMenu)this.FindResource("NotifierContextMenu");
             if (e.Button == WinForms.MouseButtons.Right)
             {
-                menu.IsOpen = true;
-            }
-            else if(e.Button == WinForms.MouseButtons.Left)
-            {
-                menu.IsOpen = false;
+                MyContextMenu.IsOpen = true;
             }
         }
 
@@ -73,26 +82,8 @@ namespace WpfApiWeatherNews
             this.Close();
         }
 
-        [DllImport("User32.dll")]
-        static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
-        [DllImport("User32.dll")]
-        static extern int SetForegroundWindow(IntPtr hWnd);
-
-
-        [STAThread]
         private async void TextSelection()
         {
-            //Process process = Process.Start("notepad.exe");
-            IntPtr hWndNotepad = FindWindow("Notepad", null);
-            SetForegroundWindow(hWndNotepad);
-
-            IDataObject tmpClipboard = System.Windows.Clipboard.GetDataObject();
-            //System.Windows.Clipboard.Clear();
-            //await Task.Delay(50);
-            // Send Ctrl+C, which is "copy"
-            //System.Windows.Forms.SendKeys.SendWait("^c");
-            //await Task.Delay(50);
-
             if (System.Windows.Clipboard.ContainsText())
             {
                 string text = System.Windows.Clipboard.GetText();
@@ -251,7 +242,8 @@ namespace WpfApiWeatherNews
         {
             if(e.KeyboardDevice.Modifiers != ModifierKeys.None && e.Key != Key.None)
             {
-                Keys = (e.KeyboardDevice.Modifiers, e.Key);
+                if(e.KeyboardDevice.Modifiers != ModifierKeys.Control || e.Key != Key.C)
+                    Keys = (e.KeyboardDevice.Modifiers, e.Key);
             }
         }
 

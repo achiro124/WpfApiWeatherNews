@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:WpfApiWeatherNews"
         mc:Ignorable="d"
         Title="Погода на данный момент" Height="85" Width="275" ResizeMode="NoResize" AllowsTransparency="True" 
-        WindowStyle="None" Topmost="True" MouseEnter="Window_MouseEnter" MouseLeave="Window_MouseLeave" MouseDown="Window_MouseDown">
+        WindowStyle="None" Topmost="True" MouseDown="Window_MouseDown" Activated="Window_Activated" Deactivated="Window_Deactivated">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="0.35*"/>
