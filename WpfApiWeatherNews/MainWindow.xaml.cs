@@ -28,7 +28,8 @@ namespace WpfApiWeatherNews
 
     public partial class MainWindow : System.Windows.Window ,INotifyPropertyChanged
     {
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
+        private InfWindow? window;
         protected virtual void OnPropertyChanged(string propertyName = "")
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
@@ -36,7 +37,7 @@ namespace WpfApiWeatherNews
 
         private WinForms.NotifyIcon notifier = new WinForms.NotifyIcon();
 
-        private HotKeyHost hotKeyHost;
+        private HotKeyHost? hotKeyHost;
 
         private (ModifierKeys, Key) keys;
         public (ModifierKeys,Key) Keys 
@@ -48,40 +49,17 @@ namespace WpfApiWeatherNews
                 OnPropertyChanged(nameof(Keys));
             }
         }
-
-        public ContextMenu MyContextMenu { get; set; }
-
+ 
         public MainWindow()
         {
             InitializeComponent();
-            MyContextMenu = (ContextMenu)this.FindResource("NotifierContextMenu");
-        }
-        private void Window_PreviewMouseDown(object sender, MouseButtonEventArgs e)
-        {
-            if (e.ChangedButton == MouseButton.Left)
-            {
-                // Закрываем контекстное меню
-                if (ContextMenu.IsOpen)
-                {
-                    ContextMenu.IsOpen = false;
-                }
-            }
         }
 
-        void notifier_MouseDown(object sender, WinForms.MouseEventArgs e)
-        {
-            if (e.Button == WinForms.MouseButtons.Right)
-            {
-                MyContextMenu.IsOpen = true;
-            }
-        }
-
-        private void Menu_Close(object sender, RoutedEventArgs e)
+        private void Menu_Close(object sender, EventArgs e)
         {
             this.notifier.Dispose();
             this.Close();
         }
-
         private async void TextSelection()
         {
             if (System.Windows.Clipboard.ContainsText())
@@ -92,13 +70,8 @@ namespace WpfApiWeatherNews
 
                 try
                 {
-                    //Определение к какому языку принадлежит слово(ru, eng и т.д.)
-                    //string language = await ApiDetect(text);
-                    //Перевод с определенного языка на английский
                     text = await ApiTranslate(text);
-                    weather = ApiWeather(text);
-                    //Запрос
-                    // 
+                    weather = ApiWeather(text); 
                 }
                 catch (Exception)
                 {
@@ -107,6 +80,9 @@ namespace WpfApiWeatherNews
                 }
 
                 CreateNewWindow(GetMousePosition(), weather);
+                if(window?.ShowDialog() == false)
+                {
+                }
                 
             }
         }   
@@ -156,7 +132,7 @@ namespace WpfApiWeatherNews
         }
         private void CreateNewWindow(System.Windows.Point startLocation, (string,string) weather)
         {
-            var window = new InfWindow(weather);
+            window = new InfWindow(weather);
             window.Owner = this;
             var helper = new WindowInteropHelper(window);
             var hwndSource = HwndSource.FromHwnd(helper.EnsureHandle());
@@ -186,10 +162,6 @@ namespace WpfApiWeatherNews
             {
                 window.Left = wpfMouseLocation.X;
             }
-            
-            window.Show();
-
-
         }
 
         public System.Windows.Point GetMousePosition()
@@ -204,7 +176,14 @@ namespace WpfApiWeatherNews
             hotKeyHost = new HotKeyHost((HwndSource)PresentationSource.FromVisual(this));
             hotKeyHost.AddHotKey(new CustomHotKey(Keys.Item2, Keys.Item1, TextSelection));
 
-            this.notifier.MouseDown += new WinForms.MouseEventHandler(notifier_MouseDown);
+            ToolStripMenuItem settingMenuItem = new ToolStripMenuItem("Настройки");
+            ToolStripMenuItem closeMenuItem = new ToolStripMenuItem("Выйти");
+            settingMenuItem.Click += Menu_Settings;
+            closeMenuItem.Click += Menu_Close;
+
+            notifier.ContextMenuStrip = new ContextMenuStrip();
+            notifier.ContextMenuStrip.Items.AddRange(new[] {settingMenuItem, closeMenuItem});
+
             var exePath = AppDomain.CurrentDomain.BaseDirectory;
             var path = Path.Combine(exePath, @"Resources\icon.ico");
             this.notifier.Icon = new System.Drawing.Icon(path);
@@ -215,7 +194,7 @@ namespace WpfApiWeatherNews
 
         }
 
-        private void Menu_Settings(object sender, RoutedEventArgs e)
+        private void Menu_Settings(object sender, EventArgs e)
         {
             this.Visibility = Visibility.Visible;
         }
@@ -260,8 +239,6 @@ namespace WpfApiWeatherNews
                 return;
             }
         }
-
-
         private void CreateXmlPersonKeys()
         {
             var exePath = AppDomain.CurrentDomain.BaseDirectory;
@@ -280,7 +257,6 @@ namespace WpfApiWeatherNews
                 }                
             }
         }
-
         private void NewPersonKeys((ModifierKeys, Key) myCastomKeys)
         {
             var exePath = AppDomain.CurrentDomain.BaseDirectory;
