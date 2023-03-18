@@ -1,0 +1,7 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Keys>
+  <CastomKey name="castomKey">
+    <Key>48</Key>
+    <Modifiers>6</Modifiers>
+  </CastomKey>
+</Keys>
