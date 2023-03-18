@@ -9,18 +9,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MouseKeyHook" Version="5.6.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
-    <PackageReference Include="RestSharp" Version="108.0.3" />
+    <Content Include="icon.ico" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Resources\PersonKeys.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Resources\icon.ico">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
+    <PackageReference Include="RestSharp" Version="108.0.3" />
   </ItemGroup>
 
 </Project>

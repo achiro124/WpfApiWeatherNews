@@ -15,7 +15,6 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using System.Xml;
 using System.Xml.Linq;
-using IDataObject = System.Windows.IDataObject;
 using WinForms = System.Windows.Forms;
 
 namespace WpfApiWeatherNews
@@ -62,7 +61,7 @@ namespace WpfApiWeatherNews
         }
         private async void TextSelection()
         {
-            if (System.Windows.Clipboard.ContainsText())
+            if (System.Windows.Clipboard.ContainsText() && window == null)
             {
                 string text = System.Windows.Clipboard.GetText();
                 string result;
@@ -82,6 +81,7 @@ namespace WpfApiWeatherNews
                 CreateNewWindow(GetMousePosition(), weather);
                 if(window?.ShowDialog() == false)
                 {
+                    window = null;
                 }
                 
             }
@@ -184,8 +184,7 @@ namespace WpfApiWeatherNews
             notifier.ContextMenuStrip = new ContextMenuStrip();
             notifier.ContextMenuStrip.Items.AddRange(new[] {settingMenuItem, closeMenuItem});
 
-            var exePath = AppDomain.CurrentDomain.BaseDirectory;
-            var path = Path.Combine(exePath, @"Resources\icon.ico");
+            var path = ".\\Resources\\Icon.ico";
             this.notifier.Icon = new System.Drawing.Icon(path);
             this.notifier.Visible = true;
 
@@ -197,20 +196,6 @@ namespace WpfApiWeatherNews
         private void Menu_Settings(object sender, EventArgs e)
         {
             this.Visibility = Visibility.Visible;
-        }
-
-        private void Window_Closing(object sender, CancelEventArgs e)
-        {
-            e.Cancel = true;
-            Hide();
-            try
-            {
-                hotKeyHost.AddHotKey(new CustomHotKey(Keys.Item2, Keys.Item1, TextSelection));
-            }
-            catch (Exception)
-            {
-                return;
-            }
         }
         private void btnChange_Click(object sender, RoutedEventArgs e)
         {
@@ -241,9 +226,8 @@ namespace WpfApiWeatherNews
         }
         private void CreateXmlPersonKeys()
         {
-            var exePath = AppDomain.CurrentDomain.BaseDirectory;
-            var path = Path.Combine(exePath, "Resources\\PersonKeys.xml");
-
+            var path = ".\\Resources\\PersonKeys.xml";
+            FileInfo fileInfo = new FileInfo(path);
             XmlDocument xDoc = new XmlDocument();
             xDoc.Load(path);
             if(xDoc != null)
@@ -256,11 +240,13 @@ namespace WpfApiWeatherNews
                     Keys = _keys;
                 }                
             }
+
         }
         private void NewPersonKeys((ModifierKeys, Key) myCastomKeys)
         {
-            var exePath = AppDomain.CurrentDomain.BaseDirectory;
-            var path = Path.Combine(exePath, "Resources\\PersonKeys.xml");
+            var path = ".\\Resources\\PersonKeys.xml";
+            FileInfo fileInfo = new FileInfo(path);
+
 
             XDocument xdoc = XDocument.Load(path);
             var _key = xdoc.Element("Keys")?
@@ -283,6 +269,26 @@ namespace WpfApiWeatherNews
                     numModif.Value = $"{k}";
                 }
                 xdoc.Save(path);
+            }
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            Hide();
+            try
+            {
+                hotKeyHost.AddHotKey(new CustomHotKey(Keys.Item2, Keys.Item1, TextSelection));
+            }
+            catch (Exception)
+            {
+                return;
+            }
+        }
+        private void Window_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Left)
+            {
+                this.DragMove();
             }
         }
     } 
